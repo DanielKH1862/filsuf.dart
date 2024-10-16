@@ -16,7 +16,42 @@ if ($conn->connect_error) {
     die(json_encode(["error" => "Connection failed: " . $conn->connect_error]));
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    // Handle delete request
+    $kd_galery = $_GET['kd_galery'];
+    
+    // First, get the image filename
+    $sql = "SELECT images FROM galery WHERE kd_galery = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $kd_galery);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $image_filename = $row['images'];
+        
+        // Delete the record from the database
+        $sql = "DELETE FROM galery WHERE kd_galery = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $kd_galery);
+        
+        if ($stmt->execute()) {
+            // If database deletion is successful, delete the image file
+            $image_path = "galery/" . $image_filename;
+            if (file_exists($image_path)) {
+                unlink($image_path);
+            }
+            echo json_encode(["success" => true, "message" => "Gallery item deleted successfully"]);
+        } else {
+            echo json_encode(["error" => "Error deleting gallery item: " . $stmt->error]);
+        }
+        
+        $stmt->close();
+    } else {
+        echo json_encode(["error" => "Gallery item not found"]);
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle new post
     $judul_galery = $_POST['judul_galery'];
     $isi_galery = $_POST['isi_galery'];

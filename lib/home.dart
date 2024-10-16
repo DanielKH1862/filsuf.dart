@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: const Color.fromARGB(255, 255, 214, 64),
+                                color: Color.fromARGB(255, 196, 154, 0),
                               ),
                     ),
                     const SizedBox(height: 20),
@@ -123,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Color.fromARGB(255, 91, 91, 91)
+                  ? const Color.fromARGB(255, 91, 91, 91)
                   : const Color.fromARGB(255, 40, 40, 40)),
         ),
         const SizedBox(height: 10),

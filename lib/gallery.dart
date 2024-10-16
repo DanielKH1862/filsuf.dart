@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 class GalleryScreen extends StatefulWidget {
   const GalleryScreen({super.key});
@@ -59,6 +60,36 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
   }
 
+  Future<void> _deleteGalleryItem(String kdGalery) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.delete(
+        Uri.parse(
+            'https://praktikum-cpanel-unbin.com/solev/lugowo/gallery.php?kd_galery=$kdGalery'),
+      );
+
+      if (response.statusCode == 200) {
+        await _fetchGallery();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gallery item deleted successfully')),
+        );
+      } else {
+        throw Exception('Failed to delete gallery item');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting gallery item: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,7 +100,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
             icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => AddGalleryItemScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const AddGalleryItemScreen()),
               );
             },
           ),
@@ -90,7 +122,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 itemCount: _galleryList.length,
                 itemBuilder: (context, index) {
                   final gallery = _galleryList[index];
-                  return GalleryItem(gallery: gallery);
+                  return GalleryItem(
+                    gallery: gallery,
+                    onDelete: () => _deleteGalleryItem(gallery['kd_galery']),
+                  );
                 },
               ),
             ),
@@ -100,8 +135,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
 class GalleryItem extends StatelessWidget {
   final Map<String, dynamic> gallery;
+  final Function() onDelete;
 
-  const GalleryItem({super.key, required this.gallery});
+  const GalleryItem({super.key, required this.gallery, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -198,8 +234,49 @@ class GalleryItem extends StatelessWidget {
                   ],
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _confirmDelete(context);
+                      },
+                      child: const Text('Delete',
+                          style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text('Are you sure you want to delete this image?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onDelete();
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
         );
       },
     );
@@ -207,6 +284,8 @@ class GalleryItem extends StatelessWidget {
 }
 
 class AddGalleryItemScreen extends StatefulWidget {
+  const AddGalleryItemScreen({super.key});
+
   @override
   _AddGalleryItemScreenState createState() => _AddGalleryItemScreenState();
 }
@@ -217,18 +296,18 @@ class _AddGalleryItemScreenState extends State<AddGalleryItemScreen> {
   final _descriptionController = TextEditingController();
   File? _image;
   bool _isLoading = false;
+  final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
     try {
-      final MethodChannel _channel = MethodChannel('image_picker_workaround');
-      final String? result = await _channel.invokeMethod('pickImage');
-
-      if (result != null) {
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
         setState(() {
-          _image = File(result);
+          _image = File(pickedFile.path);
         });
       }
-    } on PlatformException catch (e) {
+    } catch (e) {
       print("Failed to pick image: $e");
     }
   }

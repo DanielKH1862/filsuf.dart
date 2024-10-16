@@ -34,6 +34,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     });
   }
 
+  Future<void> _refreshCurrentPage() async {
+    // Implement the refresh logic here
+    // For now, we'll just wait for a second to simulate a refresh
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      // Update the current page if needed
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -42,7 +51,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor:
-            isDarkMode ? Colors.black : Color.fromARGB(255, 76, 76, 76),
+            isDarkMode ? Colors.black : const Color.fromARGB(255, 76, 76, 76),
         foregroundColor: const Color.fromARGB(255, 255, 214, 64),
         elevation: 4,
         shadowColor: Colors.black.withOpacity(0.5),
@@ -101,7 +110,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
         ],
       ),
-      body: _pages[_selectedIndex],
+      body: RefreshIndicator(
+        onRefresh: _refreshCurrentPage,
+        color: const Color.fromARGB(255, 255, 214, 64),
+        child: _pages[_selectedIndex],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -122,7 +135,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         unselectedItemColor:
             isDarkMode ? const Color.fromARGB(255, 78, 78, 78) : Colors.black,
         backgroundColor:
-            isDarkMode ? Colors.black : Color.fromARGB(255, 66, 66, 66),
+            isDarkMode ? Colors.black : const Color.fromARGB(255, 66, 66, 66),
         onTap: _onItemTapped,
       ),
     );
