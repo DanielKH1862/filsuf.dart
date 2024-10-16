@@ -51,7 +51,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor:
-            isDarkMode ? Colors.black : const Color.fromARGB(255, 76, 76, 76),
+            isDarkMode ? Colors.black : Color.fromARGB(255, 122, 122, 122),
         foregroundColor: const Color.fromARGB(255, 255, 214, 64),
         elevation: 4,
         shadowColor: Colors.black.withOpacity(0.5),
@@ -132,10 +132,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color.fromARGB(255, 255, 214, 64),
-        unselectedItemColor:
-            isDarkMode ? const Color.fromARGB(255, 78, 78, 78) : Colors.black,
-        backgroundColor:
-            isDarkMode ? Colors.black : const Color.fromARGB(255, 66, 66, 66),
+        unselectedItemColor: isDarkMode
+            ? Color.fromARGB(255, 154, 154, 154)
+            : const Color.fromARGB(255, 212, 212, 212),
+        backgroundColor: isDarkMode
+            ? const Color.fromARGB(255, 49, 49, 49)
+            : const Color.fromARGB(255, 122, 122, 122),
         onTap: _onItemTapped,
       ),
     );

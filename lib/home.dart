@@ -49,8 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDarkMode
-          ? Colors.black
-          : const Color.fromARGB(255, 189, 189, 189), // Add this line
+          ? const Color.fromARGB(255, 34, 34, 34)
+          : const Color.fromARGB(255, 122, 122, 122), // Add this line
       body: SafeArea(
         child: Stack(
           children: [
@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 196, 154, 0),
+                                color: Color.fromARGB(255, 255, 200, 0),
                               ),
                     ),
                     const SizedBox(height: 20),
@@ -135,32 +135,32 @@ class _HomeScreenState extends State<HomeScreen> {
               Icons.add_task,
               'Tugas Baru',
               Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[700]!
-                  : const Color.fromARGB(255, 189, 189, 189),
+                  ? Color.fromARGB(255, 122, 122, 122)
+                  : const Color.fromARGB(255, 122, 122, 122),
             ),
             _buildActionButton(
               context,
               Icons.event,
               'Jadwal',
               Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[700]!
-                  : const Color.fromARGB(255, 189, 189, 189),
+                  ? Color.fromARGB(255, 122, 122, 122)
+                  : const Color.fromARGB(255, 122, 122, 122),
             ),
             _buildActionButton(
               context,
               Icons.bar_chart,
               'Laporan',
               Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[700]!
-                  : const Color.fromARGB(255, 189, 189, 189),
+                  ? Color.fromARGB(255, 122, 122, 122)
+                  : const Color.fromARGB(255, 122, 122, 122),
             ),
             _buildActionButton(
               context,
               Icons.person,
               'Profil',
               Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[700]!
-                  : const Color.fromARGB(255, 189, 189, 189),
+                  ? Color.fromARGB(255, 122, 122, 122)
+                  : const Color.fromARGB(255, 122, 122, 122),
             ),
           ],
         ),

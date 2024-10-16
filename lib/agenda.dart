@@ -21,6 +21,10 @@ class _AgendaScreenState extends State<AgendaScreen> {
   }
 
   Future<void> _fetchAgenda() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final response = await http.get(Uri.parse(
         'https://praktikum-cpanel-unbin.com/solev/lugowo/agenda.php'));
 
@@ -39,12 +43,126 @@ class _AgendaScreenState extends State<AgendaScreen> {
     }
   }
 
+  Future<void> _addAgenda(Map<String, dynamic> newAgenda) async {
+    final response = await http.post(
+      Uri.parse('https://praktikum-cpanel-unbin.com/solev/lugowo/agenda.php'),
+      body: json.encode(newAgenda),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      _fetchAgenda();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error adding agenda')),
+      );
+    }
+  }
+
+  Future<void> _updateAgenda(Map<String, dynamic> updatedAgenda) async {
+    final response = await http.put(
+      Uri.parse('https://praktikum-cpanel-unbin.com/solev/lugowo/agenda.php'),
+      body: json.encode(updatedAgenda),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      _fetchAgenda();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error updating agenda')),
+      );
+    }
+  }
+
+  Future<void> _deleteAgenda(String id) async {
+    final response = await http.delete(
+      Uri.parse('https://praktikum-cpanel-unbin.com/solev/lugowo/agenda.php'),
+      body: json.encode({'kd_agenda': id}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      _fetchAgenda();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error deleting agenda')),
+      );
+    }
+  }
+
+  void _showAddEditDialog({Map<String, dynamic>? agenda}) {
+    final isEditing = agenda != null;
+    final titleController =
+        TextEditingController(text: agenda?['judul_agenda'] ?? '');
+    final contentController =
+        TextEditingController(text: agenda?['isi_agenda'] ?? '');
+    final dateController =
+        TextEditingController(text: agenda?['tgl_agenda'] ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isEditing ? 'Edit Agenda' : 'Add Agenda'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(labelText: 'Content'),
+                maxLines: 3,
+              ),
+              TextField(
+                controller: dateController,
+                decoration:
+                    const InputDecoration(labelText: 'Date (YYYY-MM-DD)'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newAgenda = {
+                'judul_agenda': titleController.text,
+                'isi_agenda': contentController.text,
+                'tgl_agenda': dateController.text,
+              };
+              if (isEditing) {
+                newAgenda['kd_agenda'] = agenda!['kd_agenda'].toString();
+                _updateAgenda(newAgenda);
+              } else {
+                _addAgenda(newAgenda);
+              }
+              Navigator.pop(context);
+            },
+            child: Text(isEditing ? 'Update' : 'Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _showAddEditDialog(),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -104,6 +222,22 @@ class _AgendaScreenState extends State<AgendaScreen> {
                                   fontStyle: FontStyle.italic,
                                   color: Colors.grey,
                                 ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () =>
+                                        _showAddEditDialog(agenda: agenda),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => _deleteAgenda(
+                                        agenda['kd_agenda'].toString()),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
