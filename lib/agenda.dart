@@ -137,7 +137,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                 'tgl_agenda': dateController.text,
               };
               if (isEditing) {
-                newAgenda['kd_agenda'] = agenda!['kd_agenda'].toString();
+                newAgenda['kd_agenda'] = agenda['kd_agenda'].toString();
                 _updateAgenda(newAgenda);
               } else {
                 _addAgenda(newAgenda);

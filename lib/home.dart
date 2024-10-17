@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 255, 200, 0),
+                                color: const Color.fromARGB(255, 255, 200, 0),
                               ),
                     ),
                     const SizedBox(height: 20),
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icons.add_task,
               'Tugas Baru',
               Theme.of(context).brightness == Brightness.dark
-                  ? Color.fromARGB(255, 122, 122, 122)
+                  ? const Color.fromARGB(255, 122, 122, 122)
                   : const Color.fromARGB(255, 122, 122, 122),
             ),
             _buildActionButton(
@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icons.event,
               'Jadwal',
               Theme.of(context).brightness == Brightness.dark
-                  ? Color.fromARGB(255, 122, 122, 122)
+                  ? const Color.fromARGB(255, 122, 122, 122)
                   : const Color.fromARGB(255, 122, 122, 122),
             ),
             _buildActionButton(
@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icons.bar_chart,
               'Laporan',
               Theme.of(context).brightness == Brightness.dark
-                  ? Color.fromARGB(255, 122, 122, 122)
+                  ? const Color.fromARGB(255, 122, 122, 122)
                   : const Color.fromARGB(255, 122, 122, 122),
             ),
             _buildActionButton(
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icons.person,
               'Profil',
               Theme.of(context).brightness == Brightness.dark
-                  ? Color.fromARGB(255, 122, 122, 122)
+                  ? const Color.fromARGB(255, 122, 122, 122)
                   : const Color.fromARGB(255, 122, 122, 122),
             ),
           ],

@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 class GalleryScreen extends StatefulWidget {
@@ -90,6 +89,18 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
   }
 
+  Future<void> _editGalleryItem(Map<String, dynamic> gallery) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditGalleryItemScreen(gallery: gallery),
+      ),
+    );
+
+    if (result == true) {
+      await _fetchGallery();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,6 +136,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                   return GalleryItem(
                     gallery: gallery,
                     onDelete: () => _deleteGalleryItem(gallery['kd_galery']),
+                    onEdit: () => _editGalleryItem(gallery),
                   );
                 },
               ),
@@ -136,8 +148,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
 class GalleryItem extends StatelessWidget {
   final Map<String, dynamic> gallery;
   final Function() onDelete;
+  final Function() onEdit;
 
-  const GalleryItem({super.key, required this.gallery, required this.onDelete});
+  const GalleryItem({
+    super.key,
+    required this.gallery,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -239,6 +257,13 @@ class GalleryItem extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        onEdit();
+                      },
+                      child: const Text('Edit'),
+                    ),
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -402,6 +427,166 @@ class _AddGalleryItemScreenState extends State<AddGalleryItemScreen> {
                     ElevatedButton(
                       onPressed: _submitForm,
                       child: const Text('Submit'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+}
+
+// Add this new class for editing gallery items
+class EditGalleryItemScreen extends StatefulWidget {
+  final Map<String, dynamic> gallery;
+
+  const EditGalleryItemScreen({super.key, required this.gallery});
+
+  @override
+  _EditGalleryItemScreenState createState() => _EditGalleryItemScreenState();
+}
+
+class _EditGalleryItemScreenState extends State<EditGalleryItemScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+  File? _image;
+  bool _isLoading = false;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController =
+        TextEditingController(text: widget.gallery['judul_galery']);
+    _descriptionController =
+        TextEditingController(text: widget.gallery['isi_galery']);
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      print("Failed to pick image: $e");
+    }
+  }
+
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse(
+              'https://praktikum-cpanel-unbin.com/solev/lugowo/gallery.php'),
+        );
+
+        request.fields['kd_galery'] = widget.gallery['kd_galery'];
+        request.fields['judul_galery'] = _titleController.text;
+        request.fields['isi_galery'] = _descriptionController.text;
+        request.fields['action'] = 'edit';
+
+        if (_image != null) {
+          var pic = await http.MultipartFile.fromPath('image', _image!.path);
+          request.files.add(pic);
+        }
+
+        var response = await request.send();
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Gallery item updated successfully')),
+          );
+          Navigator.of(context).pop(true);
+        } else {
+          throw Exception('Failed to update gallery item');
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error updating gallery item: ${e.toString()}')),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Edit Gallery Item')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      controller: _titleController,
+                      decoration: const InputDecoration(labelText: 'Title'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a title';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration:
+                          const InputDecoration(labelText: 'Description'),
+                      maxLines: 3,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a description';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _pickImage,
+                      child: const Text('Change Image'),
+                    ),
+                    if (_image != null) ...[
+                      const SizedBox(height: 16),
+                      Image.file(_image!, height: 200),
+                    ] else ...[
+                      const SizedBox(height: 16),
+                      CachedNetworkImage(
+                        imageUrl:
+                            'https://praktikum-cpanel-unbin.com/solev/lugowo/galery/${widget.gallery['images']}',
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _submitForm,
+                      child: const Text('Update'),
                     ),
                   ],
                 ),
